@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docu Sort - Document Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-tab.active { background-color: #3b82f6; color: white; }
+        .card { transition: all 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .drop-zone.dragover { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-900 text-white flex flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-xl font-bold"><i class="fas fa-folder-open mr-2"></i>Docu Sort</h1>
+                <p class="text-gray-400 text-sm">Lexington Flats / Velair</p>
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <button onclick="showTab('dashboard')" class="nav-tab active w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                </button>
+                <button onclick="showTab('upload')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-upload mr-2"></i>Upload Files
+                </button>
+                <button onclick="showTab('documents')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-file-alt mr-2"></i>Documents
+                </button>
+                <button onclick="showTab('dedupe')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-copy mr-2"></i>Deduplication
+                </button>
+                <button onclick="showTab('search')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-search mr-2"></i>Search
+                </button>
+                <button onclick="showTab('settings')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-cog mr-2"></i>Settings
+                </button>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <div id="status-indicator" class="flex items-center text-sm">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    <span>Connected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active p-6">
+                <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Documents</p>
+                                <p id="stat-docs" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-file-alt text-3xl text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Total Cases</p>
+                                <p id="stat-cases" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-briefcase text-3xl text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Quarantined Files</p>
+                                <p id="stat-quarantine" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-exclamation-triangle text-3xl text-yellow-500"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="font-semibold mb-2">Inbox Storage</h3>
+                        <p id="storage-inbox" class="text-2xl font-bold text-blue-600">0 MB</p>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="font-semibold mb-2">Cases Storage</h3>
+                        <p id="storage-cases" class="text-2xl font-bold text-green-600">0 MB</p>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="font-semibold mb-2">Quarantine Storage</h3>
+                        <p id="storage-quarantine" class="text-2xl font-bold text-yellow-600">0 MB</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="upload" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-6">Upload Files</h2>
+                <div id="drop-zone" class="drop-zone border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-blue-500 transition">
+                    <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 mb-2">Drag and drop files here</p>
+                    <p class="text-gray-400 text-sm">or click to browse</p>
+                    <input type="file" id="file-input" multiple class="hidden">
+                </div>
+                <div id="upload-progress" class="mt-4 hidden">
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <p class="font-semibold mb-2">Uploading...</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progress-bar" class="bg-blue-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Tab -->
+            <div id="documents" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-6">Documents</h2>
+                <div class="mb-4 flex gap-4">
+                    <select id="case-filter" class="px-4 py-2 border rounded-lg">
+                        <option value="">All Cases</option>
+                    </select>
+                    <button onclick="loadDocuments()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-sync mr-2"></i>Refresh
+                    </button>
+                </div>
+                <div id="documents-list" class="space-y-2">
+                    <p class="text-gray-500">Loading documents...</p>
+                </div>
+            </div>
+
+            <!-- Deduplication Tab -->
+            <div id="dedupe" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-6">Deduplication</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="font-semibold mb-4">Run Deduplication</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-1">Root Paths (comma-separated)</label>
+                                <input type="text" id="dedupe-roots" value="C:\Users\Brad\Documents,C:\Users\Brad\OneDrive" 
+                                       class="w-full px-3 py-2 border rounded-lg">
+                            </div>
+                            <button onclick="runDedupe()" class="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                                <i class="fas fa-play mr-2"></i>Start Deduplication
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="font-semibold mb-4">Quick Actions</h3>
+                        <div class="space-y-2">
+                            <button onclick="fetchEmails()" class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                                <i class="fas fa-envelope mr-2"></i>Fetch Emails
+                            </button>
+                            <button onclick="startWatcher()" class="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                                <i class="fas fa-eye mr-2"></i>Start Ingest Watcher
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-white rounded-lg shadow p-6">
+                    <h3 class="font-semibold mb-4">Quarantined Files</h3>
+                    <div id="quarantine-list" class="space-y-2 max-h-96 overflow-auto">
+                        <p class="text-gray-500">Loading quarantine...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Tab -->
+            <div id="search" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-6">Search Documents</h2>
+                <div class="mb-4">
+                    <div class="flex gap-4">
+                        <input type="text" id="search-input" placeholder="Search documents..." 
+                               class="flex-1 px-4 py-2 border rounded-lg" onkeypress="if(event.key==='Enter')searchDocuments()">
+                        <button onclick="searchDocuments()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                            <i class="fas fa-search mr-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+                <div id="search-results" class="space-y-2">
+                    <p class="text-gray-500">Enter a search query to find documents</p>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-6">Settings</h2>
+                <div class="card bg-white rounded-lg shadow p-6 max-w-2xl">
+                    <h3 class="font-semibold mb-4">Database Configuration</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Database Name</label>
+                            <input type="text" id="db-name" value="semptify" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">User</label>
+                            <input type="text" id="db-user" value="semptify" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Password</label>
+                            <input type="password" id="db-password" value="semptify_pass" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Host</label>
+                            <input type="text" id="db-host" value="localhost" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Port</label>
+                            <input type="text" id="db-port" value="5432" class="w-full px-3 py-2 border rounded-lg">
+                        </div>
+                        <button onclick="saveSettings()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                            <i class="fas fa-save mr-2"></i>Save Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Viewer Modal -->
+    <div id="doc-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto m-4">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-bold">Document</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+
+        // Tab navigation
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabId === 'dashboard') loadStats();
+            if (tabId === 'documents') loadDocuments();
+            if (tabId === 'dedupe') loadQuarantine();
+        }
+
+        // API calls
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                alert(`Error: ${error.message}`);
+                return null;
+            }
+        }
+
+        // Load stats
+        async function loadStats() {
+            const stats = await apiCall('/stats');
+            if (stats) {
+                document.getElementById('stat-docs').textContent = stats.total_documents;
+                document.getElementById('stat-cases').textContent = stats.total_cases;
+                document.getElementById('storage-inbox').textContent = formatBytes(stats.storage.inbox_bytes);
+                document.getElementById('storage-cases').textContent = formatBytes(stats.storage.cases_bytes);
+                document.getElementById('storage-quarantine').textContent = formatBytes(stats.storage.quarantine_bytes);
+            }
+            loadQuarantine();
+        }
+
+        // Load documents
+        async function loadDocuments() {
+            const docs = await apiCall('/documents');
+            if (docs) {
+                const list = document.getElementById('documents-list');
+                if (docs.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500">No documents found</p>';
+                    return;
+                }
+                list.innerHTML = docs.map(doc => `
+                    <div class="card bg-white rounded-lg shadow p-4 cursor-pointer" onclick="viewDocument(${doc.id})">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-2xl text-blue-500 mr-4"></i>
+                                <div>
+                                    <p class="font-semibold">${doc.title}</p>
+                                    <p class="text-sm text-gray-500">${doc.doc_type} • ${new Date(doc.created_at).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // View document
+        async function viewDocument(docId) {
+            const data = await apiCall(`/documents/${docId}`);
+            if (data) {
+                document.getElementById('modal-title').textContent = data.document.title;
+                const content = data.chunks.map(c => c.content).join('\n');
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-500 mb-2">Hash: ${data.document.file_hash}</p>
+                        <p class="text-sm text-gray-500">Path: ${data.document.file_path}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg max-h-96 overflow-auto">
+                        <pre class="whitespace-pre-wrap text-sm">${content || 'No text extracted'}</pre>
+                    </div>
+                `;
+                document.getElementById('doc-modal').classList.remove('hidden');
+                document.getElementById('doc-modal').classList.add('flex');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('doc-modal').classList.add('hidden');
+            document.getElementById('doc-modal').classList.remove('flex');
+        }
+
+        // Load quarantine
+        async function loadQuarantine() {
+            const data = await apiCall('/quarantine');
+            if (data) {
+                document.getElementById('stat-quarantine').textContent = data.count;
+                const list = document.getElementById('quarantine-list');
+                if (data.files.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500">No quarantined files</p>';
+                    return;
+                }
+                list.innerHTML = data.files.map(file => `
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div class="flex items-center">
+                            <i class="fas fa-file text-yellow-500 mr-2"></i>
+                            <span class="text-sm">${file.name}</span>
+                            <span class="text-xs text-gray-400 ml-2">${formatBytes(file.size)}</span>
+                        </div>
+                        <button onclick="deleteQuarantine('${file.name}')" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function deleteQuarantine(filename) {
+            if (confirm('Delete this file from quarantine?')) {
+                await apiCall(`/quarantine/${filename}`, { method: 'DELETE' });
+                loadQuarantine();
+            }
+        }
+
+        // Run dedupe
+        async function runDedupe() {
+            const roots = document.getElementById('dedupe-roots').value.split(',').map(s => s.trim());
+            await apiCall('/dedupe/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roots })
+            });
+            alert('Deduplication started in background');
+        }
+
+        // Fetch emails
+        async function fetchEmails() {
+            await apiCall('/email/fetch', { method: 'POST' });
+            alert('Email fetcher started in background');
+        }
+
+        // Start watcher
+        async function startWatcher() {
+            await apiCall('/watcher/start', { method: 'POST' });
+            alert('Ingest watcher started in background');
+        }
+
+        // Search
+        async function searchDocuments() {
+            const query = document.getElementById('search-input').value;
+            if (!query) return;
+            const data = await apiCall(`/search?query=${encodeURIComponent(query)}`);
+            if (data) {
+                const results = document.getElementById('search-results');
+                if (data.results.length === 0) {
+                    results.innerHTML = '<p class="text-gray-500">No results found</p>';
+                    return;
+                }
+                results.innerHTML = data.results.map(doc => `
+                    <div class="card bg-white rounded-lg shadow p-4 cursor-pointer" onclick="viewDocument(${doc.id})">
+                        <p class="font-semibold">${doc.title}</p>
+                        <p class="text-sm text-gray-600 mt-1">${doc.content ? doc.content.substring(0, 200) + '...' : 'No content'}</p>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // File upload
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            await uploadFiles(files);
+        });
+        fileInput.addEventListener('change', async () => {
+            await uploadFiles(fileInput.files);
+        });
+
+        async function uploadFiles(files) {
+            const progress = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('progress-bar');
+            progress.classList.remove('hidden');
+            
+            for (let i = 0; i < files.length; i++) {
+                const formData = new FormData();
+                formData.append('file', files[i]);
+                await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                progressBar.style.width = `${((i + 1) / files.length) * 100}%`;
+            }
+            
+            progress.classList.add('hidden');
+            progressBar.style.width = '0%';
+            alert('Files uploaded successfully');
+        }
+
+        // Settings
+        async function saveSettings() {
+            const config = {
+                dbname: document.getElementById('db-name').value,
+                user: document.getElementById('db-user').value,
+                password: document.getElementById('db-password').value,
+                host: document.getElementById('db-host').value,
+                port: document.getElementById('db-port').value
+            };
+            await apiCall('/settings/database', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            alert('Settings saved. Restart the backend to apply changes.');
+        }
+
+        // Utility
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Initialize
+        loadStats();
+    </script>
+</body>
+</html>

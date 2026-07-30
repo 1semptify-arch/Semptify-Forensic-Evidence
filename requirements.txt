@@ -1,0 +1,10 @@
+watchdog
+psycopg2-binary
+pypdf
+pytesseract
+pdf2image
+cryptography
+fastapi
+uvicorn
+python-multipart
+requests

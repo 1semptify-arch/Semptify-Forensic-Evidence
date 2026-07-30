@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semptify - Forensic Evidence System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .nav-tab.active { background-color: #3b82f6; color: white; }
+        .card { transition: all 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .drop-zone.dragover { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-900 text-white flex flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-xl font-bold"><i class="fas fa-folder-open mr-2"></i>Semptify</h1>
+                <p class="text-gray-400 text-sm">Lexington Flats / Velair</p>
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <button onclick="showTab('dashboard')" class="nav-tab active w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-chart-line mr-2"></i>Dashboard
+                </button>
+                <button onclick="showTab('search')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-search mr-2"></i>Search
+                </button>
+                <button onclick="showTab('upload')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-upload mr-2"></i>Upload
+                </button>
+                <button onclick="showTab('timeline')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-clock mr-2"></i>Timeline
+                </button>
+                <button onclick="showTab('phone-numbers')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-phone mr-2"></i>Phone Numbers
+                </button>
+                <button onclick="showTab('quarantine')" class="nav-tab w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Quarantine
+                </button>
+                <button onclick="window.open('/USER_GUIDE.md', '_blank')" class="w-full text-left px-4 py-2 rounded hover:bg-gray-700 transition text-gray-300">
+                    <i class="fas fa-question-circle mr-2"></i>Help Guide
+                </button>
+            </nav>
+            <div class="p-4 border-t border-gray-700">
+                <div id="status-indicator" class="flex items-center text-sm">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    <span>Connected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active p-6">
+                <h2 class="text-2xl font-bold mb-2">Dashboard</h2>
+                <p class="text-gray-600 mb-6">Overview of your document system. See statistics at a glance.</p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-6">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Documents</p>
+                                <p class="text-xs text-gray-400">PDFs, emails, images</p>
+                                <p id="stat-docs" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-file-alt text-3xl text-blue-500"></i>
+                        </div>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Calls</p>
+                                <p class="text-xs text-gray-400">Phone call records</p>
+                                <p id="stat-calls" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-phone text-3xl text-green-500"></i>
+                        </div>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">SMS</p>
+                                <p class="text-xs text-gray-400">Text messages</p>
+                                <p id="stat-sms" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-comment text-3xl text-purple-500"></i>
+                        </div>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Phone Numbers</p>
+                                <p class="text-xs text-gray-400">Unique numbers found</p>
+                                <p id="stat-phones" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-address-book text-3xl text-yellow-500"></i>
+                        </div>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">Quarantined</p>
+                                <p class="text-xs text-gray-400">Duplicate files</p>
+                                <p id="stat-quarantine" class="text-3xl font-bold">0</p>
+                            </div>
+                            <i class="fas fa-exclamation-triangle text-3xl text-red-500"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="font-semibold mb-2">Inbox Storage</h3>
+                        <p class="text-xs text-gray-500 mb-1">Space used by your documents</p>
+                        <p id="storage-inbox" class="text-2xl font-bold text-blue-600">0 MB</p>
+                    </div>
+                    <div class="card bg-white rounded-lg shadow p-6">
+                        <h3 class="font-semibold mb-2">Quarantine Storage</h3>
+                        <p class="text-xs text-gray-500 mb-1">Space used by duplicates</p>
+                        <p id="storage-quarantine" class="text-2xl font-bold text-red-600">0 MB</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Tab -->
+            <div id="search" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-2">Search Evidence</h2>
+                <p class="text-gray-600 mb-6">Find documents, calls, and SMS messages by keywords, dates, or phone numbers.</p>
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Keywords</label>
+                            <input type="text" id="search-keywords" placeholder="e.g., invoice, rent, Brad" class="w-full px-3 py-2 border rounded-lg">
+                            <p class="text-xs text-gray-400 mt-1">Type words to search in document content</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Phone Numbers</label>
+                            <input type="text" id="search-phone" placeholder="+1-xxx-xxx-xxxx" class="w-full px-3 py-2 border rounded-lg">
+                            <p class="text-xs text-gray-400 mt-1">Find all evidence linked to this number</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Start Date</label>
+                            <input type="date" id="search-start" class="w-full px-3 py-2 border rounded-lg">
+                            <p class="text-xs text-gray-400 mt-1">Find items after this date</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">End Date</label>
+                            <input type="date" id="search-end" class="w-full px-3 py-2 border rounded-lg">
+                            <p class="text-xs text-gray-400 mt-1">Find items before this date</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-600 mb-1">Document Types</label>
+                            <select id="search-types" multiple class="w-full px-3 py-2 border rounded-lg h-32">
+                                <option value="pdf">PDF</option>
+                                <option value="email">Email</option>
+                                <option value="image">Image</option>
+                                <option value="bill">Bill</option>
+                            </select>
+                            <p class="text-xs text-gray-400 mt-1">Hold Ctrl to select multiple types</p>
+                        </div>
+                    </div>
+                    <button onclick="executeSearch()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-search mr-2"></i>Search
+                    </button>
+                </div>
+                <div id="search-results" class="space-y-2">
+                    <p class="text-gray-500">Enter search parameters and click Search</p>
+                </div>
+            </div>
+
+            <!-- Upload Tab -->
+            <div id="upload" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-2">Upload Files</h2>
+                <p class="text-gray-600 mb-6">Add documents, images, emails, or other files to the system. Files are automatically processed and categorized.</p>
+                <div id="drop-zone" class="drop-zone border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:border-blue-500 transition">
+                    <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600 mb-2">Drag and drop files here</p>
+                    <p class="text-gray-400 text-sm">or click to browse your computer</p>
+                    <p class="text-xs text-gray-400 mt-4">Supported: PDF, images (JPG, PNG), emails (.eml), audio, CSV, SMS exports</p>
+                    <input type="file" id="file-input" multiple class="hidden">
+                </div>
+                <div id="upload-progress" class="mt-4 hidden">
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <p class="font-semibold mb-2">Uploading...</p>
+                        <p class="text-xs text-gray-500 mb-2">Files are being processed: text extraction, OCR, phone number extraction</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div id="progress-bar" class="bg-blue-500 h-2 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Tab -->
+            <div id="timeline" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-2">Timeline</h2>
+                <p class="text-gray-600 mb-6">View events in chronological order. Events show dates, types, and descriptions.</p>
+                <div id="timeline-events" class="space-y-4">
+                    <p class="text-gray-500">Loading timeline...</p>
+                </div>
+            </div>
+
+            <!-- Phone Numbers Tab -->
+            <div id="phone-numbers" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-2">Phone Numbers</h2>
+                <p class="text-gray-600 mb-6">All phone numbers extracted from your documents. Click a number to see all linked evidence.</p>
+                <div id="phone-list" class="space-y-2">
+                    <p class="text-gray-500">Loading phone numbers...</p>
+                </div>
+            </div>
+
+            <!-- Quarantine Tab -->
+            <div id="quarantine" class="tab-content p-6">
+                <h2 class="text-2xl font-bold mb-2">Quarantine</h2>
+                <p class="text-gray-600 mb-6">Review and manage duplicate files. Duplicates are moved here for safety before deletion.</p>
+                <div class="mb-4">
+                    <button onclick="triggerPhoneExtraction()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                        <i class="fas fa-phone mr-2"></i>Extract Phone Numbers
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">Scan all documents again to find phone numbers</p>
+                </div>
+                <div id="quarantine-list" class="space-y-2">
+                    <p class="text-gray-500">Loading quarantine...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto m-4">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 id="modal-title" class="text-xl font-bold">Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="modal-content" class="p-6">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+
+        // Tab navigation
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabId === 'dashboard') loadStats();
+            if (tabId === 'timeline') loadTimeline();
+            if (tabId === 'phone-numbers') loadPhoneNumbers();
+            if (tabId === 'quarantine') loadQuarantine();
+        }
+
+        // API calls
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                alert(`Error: ${error.message}`);
+                return null;
+            }
+        }
+
+        // Load stats
+        async function loadStats() {
+            const stats = await apiCall('/stats');
+            if (stats) {
+                document.getElementById('stat-docs').textContent = stats.total_documents;
+                document.getElementById('stat-calls').textContent = stats.total_calls;
+                document.getElementById('stat-sms').textContent = stats.total_sms;
+                document.getElementById('stat-phones').textContent = stats.total_phone_numbers;
+                document.getElementById('storage-inbox').textContent = formatBytes(stats.storage.inbox_bytes);
+                document.getElementById('storage-quarantine').textContent = formatBytes(stats.storage.quarantine_bytes);
+            }
+            loadQuarantine();
+        }
+
+        // Search
+        async function executeSearch() {
+            const keywords = document.getElementById('search-keywords').value;
+            const phone = document.getElementById('search-phone').value;
+            const startDate = document.getElementById('search-start').value;
+            const endDate = document.getElementById('search-end').value;
+            const typesSelect = document.getElementById('search-types');
+            const types = Array.from(typesSelect.selectedOptions).map(opt => opt.value);
+
+            const params = {};
+            if (keywords) params.keywords = keywords;
+            if (phone) params.phone_numbers = [phone];
+            if (startDate) params.start_date = startDate;
+            if (endDate) params.end_date = endDate;
+            if (types.length > 0) params.types = types;
+
+            const results = await apiCall('/search', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(params)
+            });
+
+            if (results) {
+                displaySearchResults(results);
+            }
+        }
+
+        function displaySearchResults(results) {
+            const container = document.getElementById('search-results');
+            let html = '';
+
+            // Documents
+            if (results.documents && results.documents.length > 0) {
+                html += '<h3 class="font-semibold mb-2">Documents</h3>';
+                results.documents.forEach(doc => {
+                    html += `
+                        <div class="card bg-white rounded-lg shadow p-4 cursor-pointer" onclick="viewDocument(${doc.id})">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">${doc.title}</p>
+                                    <p class="text-sm text-gray-500">${doc.doc_type} • ${new Date(doc.created_at).toLocaleDateString()}</p>
+                                    <p class="text-sm text-gray-400 mt-1">${doc.snippet ? doc.snippet.substring(0, 150) + '...' : ''}</p>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // Calls
+            if (results.calls && results.calls.length > 0) {
+                html += '<h3 class="font-semibold mb-2 mt-4">Calls</h3>';
+                results.calls.forEach(call => {
+                    html += `
+                        <div class="card bg-white rounded-lg shadow p-4 cursor-pointer" onclick="viewCall(${call.id})">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">${call.phone_number}</p>
+                                    <p class="text-sm text-gray-500">${call.direction} • ${new Date(call.started_at).toLocaleString()}</p>
+                                    <p class="text-sm text-gray-400 mt-1">${call.snippet ? call.snippet.substring(0, 150) + '...' : ''}</p>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            // SMS
+            if (results.sms && results.sms.length > 0) {
+                html += '<h3 class="font-semibold mb-2 mt-4">SMS Messages</h3>';
+                results.sms.forEach(sms => {
+                    html += `
+                        <div class="card bg-white rounded-lg shadow p-4 cursor-pointer" onclick="viewSMS(${sms.id})">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">${sms.phone_number}</p>
+                                    <p class="text-sm text-gray-500">${sms.direction} • ${new Date(sms.sent_at).toLocaleString()}</p>
+                                    <p class="text-sm text-gray-400 mt-1">${sms.snippet ? sms.snippet.substring(0, 150) + '...' : ''}</p>
+                                </div>
+                                <i class="fas fa-chevron-right text-gray-400"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (!html) {
+                html = '<p class="text-gray-500">No results found</p>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        // View details
+        async function viewDocument(docId) {
+            const doc = await apiCall(`/document/${docId}`);
+            if (doc) {
+                document.getElementById('modal-title').textContent = doc.title;
+                const content = doc.chunks ? doc.chunks.map(c => c.content).join('\n') : '';
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-500">Type: ${doc.doc_type}</p>
+                        <p class="text-sm text-gray-500">Hash: ${doc.file_hash}</p>
+                        <p class="text-sm text-gray-500">Path: ${doc.file_path}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg max-h-96 overflow-auto">
+                        <pre class="whitespace-pre-wrap text-sm">${content || 'No text extracted'}</pre>
+                    </div>
+                `;
+                document.getElementById('detail-modal').classList.remove('hidden');
+                document.getElementById('detail-modal').classList.add('flex');
+            }
+        }
+
+        async function viewCall(callId) {
+            const call = await apiCall(`/call/${callId}`);
+            if (call) {
+                document.getElementById('modal-title').textContent = `Call: ${call.phone_number}`;
+                const content = call.chunks ? call.chunks.map(c => c.content).join('\n') : '';
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-500">Direction: ${call.direction}</p>
+                        <p class="text-sm text-gray-500">Duration: ${call.duration}s</p>
+                        <p class="text-sm text-gray-500">Started: ${new Date(call.started_at).toLocaleString()}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg max-h-96 overflow-auto">
+                        <pre class="whitespace-pre-wrap text-sm">${content || 'No transcript available'}</pre>
+                    </div>
+                `;
+                document.getElementById('detail-modal').classList.remove('hidden');
+                document.getElementById('detail-modal').classList.add('flex');
+            }
+        }
+
+        async function viewSMS(smsId) {
+            const sms = await apiCall(`/sms/${smsId}`);
+            if (sms) {
+                document.getElementById('modal-title').textContent = `SMS: ${sms.phone_number}`;
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-500">Direction: ${sms.direction}</p>
+                        <p class="text-sm text-gray-500">Sent: ${new Date(sms.sent_at).toLocaleString()}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <p class="text-sm">${sms.content}</p>
+                    </div>
+                `;
+                document.getElementById('detail-modal').classList.remove('hidden');
+                document.getElementById('detail-modal').classList.add('flex');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+            document.getElementById('detail-modal').classList.remove('flex');
+        }
+
+        // Timeline
+        async function loadTimeline() {
+            const events = await apiCall('/events');
+            if (events) {
+                const container = document.getElementById('timeline-events');
+                if (events.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">No events found</p>';
+                    return;
+                }
+                container.innerHTML = events.map(event => `
+                    <div class="card bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center">
+                            <div class="w-4 h-4 bg-blue-500 rounded-full mr-4"></div>
+                            <div>
+                                <p class="font-semibold">${event.title}</p>
+                                <p class="text-sm text-gray-500">${event.event_type} • ${new Date(event.occurred_at).toLocaleString()}</p>
+                                ${event.description ? `<p class="text-sm text-gray-400 mt-1">${event.description}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Phone numbers
+        async function loadPhoneNumbers() {
+            const phones = await apiCall('/phone-numbers');
+            if (phones) {
+                const container = document.getElementById('phone-list');
+                if (phones.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">No phone numbers found</p>';
+                    return;
+                }
+                container.innerHTML = phones.map(phone => `
+                    <div class="card bg-white rounded-lg shadow p-4 cursor-pointer" onclick="viewPhoneContext('${phone.number}')">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-semibold">${phone.number}</p>
+                                <p class="text-sm text-gray-500">${phone.label || 'No label'}</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function viewPhoneContext(phoneNumber) {
+            const context = await apiCall(`/phone/${phoneNumber}`);
+            if (context) {
+                document.getElementById('modal-title').textContent = `Phone: ${phoneNumber}`;
+                document.getElementById('modal-content').innerHTML = `
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-500">Label: ${context.label || 'None'}</p>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-semibold">Documents (${context.documents.length})</h4>
+                        <ul class="text-sm text-gray-600">
+                            ${context.documents.map(d => `<li>${d.title}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="font-semibold">Calls (${context.calls.length})</h4>
+                        <ul class="text-sm text-gray-600">
+                            ${context.calls.map(c => `<li>${c.direction} - ${new Date(c.started_at).toLocaleString()}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold">SMS (${context.sms.length})</h4>
+                        <ul class="text-sm text-gray-600">
+                            ${context.sms.map(s => `<li>${s.direction} - ${new Date(s.sent_at).toLocaleString()}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                document.getElementById('detail-modal').classList.remove('hidden');
+                document.getElementById('detail-modal').classList.add('flex');
+            }
+        }
+
+        // Quarantine
+        async function loadQuarantine() {
+            const data = await apiCall('/quarantine');
+            if (data) {
+                document.getElementById('stat-quarantine').textContent = data.count;
+                const list = document.getElementById('quarantine-list');
+                if (data.files.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500">No quarantined files</p>';
+                    return;
+                }
+                list.innerHTML = data.files.map(file => `
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div class="flex items-center">
+                            <i class="fas fa-file text-yellow-500 mr-2"></i>
+                            <span class="text-sm">${file.name}</span>
+                            <span class="text-xs text-gray-400 ml-2">${formatBytes(file.size)}</span>
+                        </div>
+                        <button onclick="deleteQuarantine('${file.name}')" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function deleteQuarantine(filename) {
+            if (confirm('Delete this file from quarantine?')) {
+                await apiCall(`/quarantine/${filename}`, { method: 'DELETE' });
+                loadQuarantine();
+            }
+        }
+
+        async function triggerPhoneExtraction() {
+            await apiCall('/extract-phone-numbers', { method: 'POST' });
+            alert('Phone number extraction started in background');
+        }
+
+        // File upload
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            await uploadFiles(files);
+        });
+        fileInput.addEventListener('change', async () => {
+            await uploadFiles(fileInput.files);
+        });
+
+        async function uploadFiles(files) {
+            const progress = document.getElementById('upload-progress');
+            const progressBar = document.getElementById('progress-bar');
+            progress.classList.remove('hidden');
+            
+            for (let i = 0; i < files.length; i++) {
+                const formData = new FormData();
+                formData.append('file', files[i]);
+                await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                progressBar.style.width = `${((i + 1) / files.length) * 100}%`;
+            }
+            
+            progress.classList.add('hidden');
+            progressBar.style.width = '0%';
+            alert('Files uploaded successfully');
+        }
+
+        // Utility
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Initialize
+        loadStats();
+    </script>
+</body>
+</html>
