@@ -1,6 +1,6 @@
 # Semptify - Forensic Evidence System
 
-Local-first forensic evidence management system for Lexington Flats / Velair legal cases. Ingests documents, calls, SMS, emails, and carrier records with deduplication, OCR, transcription, and unified search.
+Local-first forensic evidence management system. Ingests documents, calls, SMS, emails, and carrier records with deduplication, OCR, transcription, and unified search. Configure the active case in `app/case_config.py` or via environment variables.
 
 ## Project Structure
 
@@ -86,7 +86,7 @@ pip install -r requirements.txt
 psql $env:DATABASE_URL -f db/init_db.sql
 
 # Insert default case
-psql $env:DATABASE_URL -c "INSERT INTO cases (case_number, title, status, opened_at) VALUES ('VEL-001', 'Lexington Flats / Velair', 'active', NOW());"
+psql $env:DATABASE_URL -c "INSERT INTO cases (case_number, title, status, opened_at) VALUES ('CASE-001', 'Active Case', 'active', NOW());"
 
 # Start API server
 python -m app.api.server
@@ -116,7 +116,7 @@ $env:DB_HOST="localhost"
 psql -h localhost -U semptify -d semptify -f db/init_db.sql
 
 # Insert default case
-psql -h localhost -U semptify -d semptify -c "INSERT INTO cases (case_number, title, status, opened_at) VALUES ('VEL-001', 'Lexington Flats / Velair', 'active', NOW());"
+psql -h localhost -U semptify -d semptify -c "INSERT INTO cases (case_number, title, status, opened_at) VALUES ('CASE-001', 'Active Case', 'active', NOW());"
 
 # Start API server
 python -m app.api.server
@@ -140,7 +140,7 @@ createdb semptify
 psql -d semptify -f db/init_db.sql
 
 # Insert default case
-psql -d semptify -c "INSERT INTO cases (case_number, title, status, opened_at) VALUES ('VEL-001', 'Lexington Flats / Velair', 'active', NOW());"
+psql -d semptify -c "INSERT INTO cases (case_number, title, status, opened_at) VALUES ('CASE-001', 'Active Case', 'active', NOW());"
 
 # Start API server
 python -m app.api.server

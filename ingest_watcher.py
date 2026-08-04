@@ -6,10 +6,11 @@ from watchdog.events import FileSystemEventHandler
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-INBOX = Path("data/semptify_inbox")
-CASES = Path("data/cases")
+INBOX = Path(os.getenv("FORENSIC_INBOX", "data/semptify_inbox"))
+CASE_NAME = os.getenv("FORENSIC_CASE_NAME", "default").replace(" ", "_").lower()
+CASES = Path(os.getenv("FORENSIC_CASES_DIR", "data/cases"))
 CASES.mkdir(parents=True, exist_ok=True)
-DEFAULT_CASE = CASES / "velair_lexington"
+DEFAULT_CASE = CASES / CASE_NAME
 DEFAULT_CASE.mkdir(parents=True, exist_ok=True)
 
 DB = {

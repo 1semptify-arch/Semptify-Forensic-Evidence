@@ -10,11 +10,12 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from db import get_conn
+from case_config import CASES_DIR, DEFAULT_CASE_DIR
 
 INBOX = Path("data/inbox")
 QUARANTINE = Path("data/quarantine")
-CASES = Path("data/cases")
-DEFAULT_CASE = CASES / "velair_lexington"
+CASES = Path(CASES_DIR)
+DEFAULT_CASE = Path(DEFAULT_CASE_DIR)
 
 for p in (INBOX, QUARANTINE, DEFAULT_CASE):
     p.mkdir(parents=True, exist_ok=True)
