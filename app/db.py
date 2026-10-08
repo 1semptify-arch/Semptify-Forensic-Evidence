@@ -10,7 +10,7 @@ def get_conn():
     return psycopg2.connect(
         dbname=os.getenv("POSTGRES_DB", "semptify"),
         user=os.getenv("POSTGRES_USER", "semptify"),
-        password=os.getenv("POSTGRES_PASSWORD", "semptify_pass"),
-        host=os.getenv("DB_HOST", "localhost"),
+        password=os.getenv("POSTGRES_PASSWORD", "semptify"),
+        host=os.getenv("DB_HOST", "10.0.0.106"),
         port=os.getenv("DB_PORT", "5432"),
     )
