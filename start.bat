@@ -2,8 +2,8 @@
 echo Starting Semptify...
 echo.
 
-REM Change to project directory
-cd C:\REPOs\PPPP
+REM Change to project directory (wherever this file lives)
+cd /d "%~dp0"
 
 REM Check if Python venv exists
 if not exist ".venv" (
@@ -27,8 +27,8 @@ set DB_PORT=5432
 
 REM Start API server
 echo.
-echo Starting API server on http://localhost:8000
+echo Starting API server on http://localhost:8019
 echo Press Ctrl+C to stop
 echo.
-start http://localhost:8000
+start http://localhost:8019
 python -m app.api.server

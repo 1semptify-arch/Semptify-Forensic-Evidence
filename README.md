@@ -162,7 +162,7 @@ start.bat
 python -m app.api.server
 ```
 
-The web UI will be available at `http://localhost:8000`
+The web UI will be available at `http://localhost:8019`
 
 ### 2. Start the Ingest Watcher (Separate Terminal)
 
