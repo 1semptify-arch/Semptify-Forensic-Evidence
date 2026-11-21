@@ -14,7 +14,7 @@ Semptify is a **document organization and search system** for your legal case. I
 
 ## How to Start
 
-1. **Open the app**: Go to http://localhost:8000 in your browser
+1. **Open the app**: Go to http://localhost:8019 in your browser
 2. **You'll see 6 tabs** on the left side (Dashboard, Search, Upload, Timeline, Phone Numbers, Quarantine)
 3. **Click any tab** to use that feature
 
